@@ -27,10 +27,10 @@ TARGET_2ND_CPU_VARIANT := $(TARGET_CPU_VARIANT)
 TARGET_2ND_CPU_VARIANT_RUNTIME := $(TARGET_CPU_VARIANT)
 
 # Assertation
-TARGET_OTA_ASSERT_DEVICE := lake,lake_p,dew,dew_p
+TARGET_OTA_ASSERT_DEVICE := dew,dew_p,dew,dew_p
 
 # Bootloader
-TARGET_BOOTLOADER_BOARD_NAME := lake
+TARGET_BOOTLOADER_BOARD_NAME := dew
 TARGET_NO_BOOTLOADER := true
 TARGET_USES_UEFI := true
 
@@ -188,4 +188,4 @@ TW_LOAD_VENDOR_MODULES_EXCLUDE_GKI := true
 TW_LOAD_VENDOR_MODULES := "mt6358-accdet.ko xiaomi_touch.ko lct_tp.ko nt36528_spi.ko nt36528_spi.ko ft8057m_spi.ko ft8057p_spi.ko icnl9916_spi.ko"
 
 # Maintainer
-TW_DEVICE_VERSION := wulan17
+TW_DEVICE_VERSION := OhMyDitzzy
