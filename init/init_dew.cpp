@@ -53,7 +53,7 @@ void model_property_override(const std::string& device, const std::string& model
 void vendor_load_properties() {
     const std::string sku = GetProperty("ro.boot.product.hardware.sku", "");
 
-    if (sku == "p15ape") || (sku == "p15apg") {
+    if ((sku == "p15ape") || (sku == "p15apg")) {
         model_property_override("dew", "POCO C85");
     } else {
         model_property_override("dew", "REDMI 15C");
