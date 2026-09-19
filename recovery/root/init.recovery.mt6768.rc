@@ -1,0 +1,63 @@
+import /init.microtrust.rc
+
+on init
+    export LD_LIBRARY_PATH /system/lib64:/vendor/lib64:/vendor/lib64/hw:/system/lib64/hw
+
+on late-fs
+    # Mount RW partitions which need run fsck
+    mount_all /first_stage_ramdisk/fstab.mt6768 --late
+
+on property:ro.crypto.state=encrypted && property:ro.crypto.type=file
+    install_keyring
+
+service vendor.gatekeeper-beanpod /vendor/bin/hw/android.hardware.gatekeeper-service.beanpod
+    user root
+    group root
+    disabled
+    seclabel u:r:recovery:s0
+
+service vendor.keymint-beanpod /vendor/bin/hw/android.hardware.security.keymint@3.0-service.beanpod
+    user root
+    group root
+    disabled
+    oneshot
+    seclabel u:r:recovery:s0
+
+service load-touch-module /sbin/sh /system/bin/load-touch-module.sh
+    user root
+    group root
+    oneshot
+    disabled
+    seclabel u:r:recovery:s0
+
+on property:crypto.ready=1
+    start vendor.keymint-beanpod
+
+on property:hwservicemanager.ready=true
+    start vendor.keymint-beanpod 
+    start vendor.gatekeeper-beanpod
+
+on property:ro.crypto.state=unsupported
+    stop teei_daemon
+    stop vendor.keymint-beanpod 
+    stop vendor.gatekeeper-beanpod
+
+on property:ro.crypto.state=unencrypted
+    stop teei_daemon
+    stop vendor.keymint-beanpod 
+    stop vendor.gatekeeper-beanpod
+
+on property:twrp.decrypt.done=true
+    stop teei_daemon
+    stop vendor.keymint-beanpod 
+    stop vendor.gatekeeper-beanpod
+
+on property:crypto.ready=0
+    stop teei_daemon
+    stop vendor.keymint-beanpod 
+    stop vendor.gatekeeper-beanpod
+
+on boot
+    start boot-hal-1-2
+    start health-hal-2-1
+    start load-touch-module

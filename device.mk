@@ -1,13 +1,26 @@
-# Copyright (C) 2017-2023 The Android Open Source Project
-# Copyright (C) 2014-2023 The Team Win LLC
-# SPDX-License-Identifier: Apache-2.0
+#
+# Copyright (C) 2025 The TWRP Open Source Project
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
 
-# Inherit from those products. Most specific first.
-$(call inherit-product, $(SRC_TARGET_DIR)/product/core_64_bit.mk)
-$(call inherit-product, $(SRC_TARGET_DIR)/product/aosp_base.mk)
+DEVICE_PATH := device/xiaomi/dew
 
-# Installs gsi keys into ramdisk, to boot a developer GSI with verified boot.
-$(call inherit-product, $(SRC_TARGET_DIR)/product/gsi_keys.mk)
+# Configure base.mk
+$(call inherit-product, $(SRC_TARGET_DIR)/product/base.mk)
+
+# Configure core_64_bit_only.mk
+$(call inherit-product, $(SRC_TARGET_DIR)/product/core_64_bit_only.mk)
 
 # Configure Virtual A/B
 $(call inherit-product, $(SRC_TARGET_DIR)/product/virtual_ab_ota.mk)
@@ -15,27 +28,47 @@ $(call inherit-product, $(SRC_TARGET_DIR)/product/virtual_ab_ota.mk)
 # Configure virtual_ab compression.mk
 $(call inherit-product, $(SRC_TARGET_DIR)/product/virtual_ab_ota/compression.mk)
 
+# Configure emulated_storage.mk
+$(call inherit-product, $(SRC_TARGET_DIR)/product/emulated_storage.mk)
+
 # Configure launch_with_vendor_ramdisk.mk
 $(call inherit-product, $(SRC_TARGET_DIR)/product/virtual_ab_ota/launch_with_vendor_ramdisk.mk)
 
-# Dynamic
-PRODUCT_USE_DYNAMIC_PARTITIONS := true
+# Configure twrp common.mk
+$(call inherit-product, vendor/twrp/config/common.mk)
 
-# Virtual A/B
-ENABLE_VIRTUAL_AB := true
+# some OrangeFox-specific settings
+$(call inherit-product, $(DEVICE_PATH)/fox_dew.mk)
+
+# API
+PRODUCT_SHIPPING_API_LEVEL := 31
+PRODUCT_TARGET_VNDK_VERSION := 35
+
+# Enable Fuse Passthrough
+PRODUCT_PROPERTY_OVERRIDES += persist.sys.fuse.passthrough.enable=true
+
+# TWRP in Vendor Boot
+PRODUCT_PROPERTY_OVERRIDES += ro.twrp.vendor_boot=true
+
+# A/B
 AB_OTA_UPDATER := true
-
+ENABLE_VIRTUAL_AB := true
+TARGET_ENFORCE_AB_OTA_PARTITION_LIST := true
 AB_OTA_PARTITIONS += \
+    init_boot \
     boot \
     dtbo \
     product \
     system \
     system_ext \
+    system_dlkm \
+    odm_dlkm \
     vbmeta \
     vbmeta_system \
     vbmeta_vendor \
     vendor \
-    vendor_boot
+    vendor_boot \
+    vendor_dlkm
 
 # Update engine
 PRODUCT_PACKAGES_DEBUG += \
@@ -54,51 +87,36 @@ AB_OTA_POSTINSTALL_CONFIG += \
     FILESYSTEM_TYPE_system=ext4 \
     POSTINSTALL_OPTIONAL_system=true
 
-# API
-PRODUCT_SHIPPING_API_LEVEL := 32
+# Dynamic
+PRODUCT_USE_DYNAMIC_PARTITIONS := true
 
-# Boot control HAL
+# Bootctrl
 PRODUCT_PACKAGES += \
     android.hardware.boot@1.2-mtkimpl \
-    android.hardware.boot@1.0-impl-1.2-mtkimpl \
-    android.hardware.boot@1.2-mtkimpl.recovery \
-    bootctrl.mt6768
+    android.hardware.boot@1.2-mtkimpl.recovery
 
-PRODUCT_PACKAGES += \
-    android.hardware.boot@1.2-impl \
-    android.hardware.boot@1.2-impl.recovery \
-    android.hardware.boot@1.2-service
+PRODUCT_PACKAGES_DEBUG += \
+    bootctrl
 
-# Fastbootd
-TW_INCLUDE_FASTBOOTD := true
-PRODUCT_PACKAGES += \
-    android.hardware.fastboot@1.0-impl-mock \
-    fastbootd
-
-# Health HAL
+# Health
 PRODUCT_PACKAGES += \
     android.hardware.health@2.1-impl \
-    android.hardware.health@2.1-service \
-    android.hardware.health@2.1-impl.recovery \
-    android.hardware.health@2.1-service.rc
+    android.hardware.health@2.1-service
 
-# Soong
-PRODUCT_SOONG_NAMESPACES += \
-    $(LOCAL_PATH)
-
+# preloader devices utils
 PRODUCT_PACKAGES += \
     create_pl_dev \
     create_pl_dev.recovery
 
-# Additional binaries & libraries needed for recovery
-TARGET_RECOVERY_DEVICE_MODULES += \
-    libkeymaster4 \
-    libkeymaster41 \
-    libpuresoftkeymasterdevice \
-    libkeymaster_messages.vendor
+# Security
+PRODUCT_PACKAGES += \
+    android.hardware.security.keymint \
+    android.hardware.security.secureclock \
+    android.hardware.security.sharedsecret
 
-TW_RECOVERY_ADDITIONAL_RELINK_LIBRARY_FILES += \
-    $(TARGET_OUT_SHARED_LIBRARIES)/libkeymaster4.so \
-    $(TARGET_OUT_SHARED_LIBRARIES)/libkeymaster41.so \
-    $(TARGET_OUT_SHARED_LIBRARIES)/libpuresoftkeymasterdevice.so \
-    $(TARGET_OUT_SHARED_LIBRARIES)/libkeymaster_messages.so
+# Keystore Hal
+PRODUCT_PACKAGES += \
+    android.system.keystore2
+
+# Soong namespaces
+PRODUCT_SOONG_NAMESPACES += $(DEVICE_PATH)
