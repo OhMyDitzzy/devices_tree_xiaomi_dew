@@ -8,7 +8,7 @@ vendor_dlkm                             /vendor_dlkm           ext4   ro        
 odm_dlkm                                /odm_dlkm              ext4   ro                      wait,slotselect,avb,logical,first_stage_mount
 system_dlkm                             /odm_dlkm              ext4   ro                      wait,slotselect,avb,logical,first_stage_mount
 /dev/block/by-name/metadata             /metadata              ext4                           noatime,nosuid,nodev,discard wait,check,formattable
-/dev/block/by-name/userdata             /data                  f2fs                           noatime,nosuid,nodev,discard,noflush_merge,checkpoint_merge,reserve_root=134217,resgid=1065,fsync_mode=nobarrier,gc_merge,atgc,inlinecrypt wait,check,formattable,quota,fileencryption=aes-256-xts:aes-256-cts:v2+inlinecrypt_optimized,keydirectory=/metadata/vold/metadata_encryption
+/dev/block/by-name/userdata             /data                  f2fs                           noatime,nosuid,nodev,discard,noflush_merge,checkpoint_merge,reserve_root=134217,resgid=1065,fsync_mode=nobarrier,gc_merge,atgc wait,check,formattable,quota
 /dev/block/by-name/rescue               /cache                 ext4   auto                    noatime,nosuid,nodev,noauto_da_alloc,discard wait,check,formattable
 /dev/block/by-name/frp                  /persistent            emmc   defaults                defaults
 /dev/block/by-name/nvram                /nvram                 emmc   defaults                defaults
